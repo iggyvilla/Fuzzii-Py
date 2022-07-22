@@ -1,0 +1,2 @@
+#!/bin/bash
+screen -dmS fpy python3.9 main.py
