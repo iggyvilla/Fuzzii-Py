@@ -1,7 +1,2 @@
-# nHentai Discord bot
-Allows users to preview nHentai comics and browse them!
-
-## Sample
-<p align="center">
-  <img src="https://i.imgur.com/1AvE3RG.png">
-</p>
+# Fuzzii Py: The Discord bot
+A Discord bot with the weirdest features. Not meant for public use. Or the feint of heart.
