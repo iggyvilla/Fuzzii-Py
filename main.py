@@ -19,8 +19,6 @@ bot = interactions.Client(
     token=environ['TOKEN'],
 )
 
-COGS = ('nhc.nhentai', 'cogs.padertionary_add')
-
 
 @bot.command(name="ping",
              description="See bot latency")
@@ -38,6 +36,7 @@ async def on_ready():
         )
     )
 
+COGS = ('nhc.nhentai', 'cogs.padertionary')
 
 for cog in COGS:
     bot.load(cog)
