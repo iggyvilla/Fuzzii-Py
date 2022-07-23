@@ -4,9 +4,13 @@ from os import environ
 import firebase_admin
 from firebase_admin import credentials
 
-# logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger("fpy")
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter("[%(levelname)s:%(funcName)s] %(message)s"))
+log.addHandler(handler)
+log.setLevel("DEBUG")
 
-# Use a service account
+# For connection to the Padertionary Firestore
 cred = credentials.Certificate('fuzzibot-py-firebase-adminsdk-4v3ju-0c82b6f0b1.json')
 firebase_admin.initialize_app(cred)
 
@@ -26,7 +30,7 @@ async def ping(ctx: interactions.CommandContext):
 
 @bot.event
 async def on_ready():
-    print('Bot alive!')
+    log.info("Bot online.")
     await bot.change_presence(presence=interactions.ClientPresence(
         status=interactions.StatusType.IDLE,
         activities=[interactions.PresenceActivity(name="nHentai doujins", type=interactions.PresenceActivityType.WATCHING)],

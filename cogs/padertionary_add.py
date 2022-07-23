@@ -1,8 +1,10 @@
 import interactions
+import logging
 from datetime import datetime
 from firebase_admin import firestore
 
 db = firestore.client()
+log = logging.getLogger("fpy")
 
 
 class PadertionaryInteract(interactions.Extension):
@@ -62,12 +64,12 @@ class PadertionaryInteract(interactions.Extension):
                 )
             ]
         )
+        log.info("padertionary_add command issued")
         await ctx.popup(modal)
 
     @interactions.extension_modal("new_entry")
     async def modal_response(self, ctx, entry: str, type, def_1, def_2=None, def_3=None):
-        # print(entry, def_1, def_2, def_3)
-
+        log.info("Modal response received.")
         try:
             db.collection(u'padertionary').document(entry).set({
                 'date_added': datetime.now().strftime("%B %d at %I:%M %p"),
@@ -75,8 +77,10 @@ class PadertionaryInteract(interactions.Extension):
                 'type': type
             })
         except:
+            log.critical("Firebase error.")
             await ctx.send("Something went wrong! Try again.", ephemeral=True)
 
+        log.info("Successfully added new entry to database.")
         await ctx.send(f'Added **{entry}** to the Padertionary!', ephemeral=True)
 
 
