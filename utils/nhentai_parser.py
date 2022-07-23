@@ -1,9 +1,11 @@
-from functools import cache
-from discord.ext.commands.errors import ExtensionAlreadyLoaded
 import requests
+from typing import Union
+from NHentai.core.interfaces import Doujin
 import json
 from bs4 import BeautifulSoup
-from requests.api import request
+
+# Doesn't work anymore :( my sweet, sweet child!
+
 
 class NHentaiComic:
     def __init__(self, code: int):
@@ -95,15 +97,20 @@ def write_ratings(ratings: dict) -> None:
 class CachedNHentaiComic():
     """A class that handles a cached comic (from JSON to an accessible class)"""
     def __init__(self, cache_entry: dict) -> None:
-        self.code = cache_entry["code"]
+        self.id = cache_entry["code"]
         self.title = cache_entry["title"]
         self.thumbnail = cache_entry["thumbnail"]
-        self.favorites = cache_entry["favorites"]
-        self.pages = cache_entry["pages"]
+        self.total_favorites = cache_entry["favorites"]
+        self.images = cache_entry["pages"]
         self.tags = cache_entry["tags"]
 
+        try:
+            self.total_pages = cache_entry["total_pages"]
+        except KeyError:
+            self.total_pages = len(self.images)
+
     def __repr__(self):
-        return f'<CacheNHentaiComic code={self.code} title={self.title} favorites={self.favorites}>'
+        return f'<CacheNHentaiComic code={self.id} title={self.title} favorites={self.total_favorites}>'
 
 
 def grab_nhcache():
@@ -123,7 +130,7 @@ def in_nhcache(key: int) -> bool:
         return False
 
 
-def grab_comic(key: int) -> CachedNHentaiComic:
+def grab_comic(key: int) -> Union[CachedNHentaiComic, KeyError]:
     """Grabs a comic from the nhcache"""
     with open('jsons/nhdb.json', 'r') as f:
         cache = json.load(f) 
@@ -134,21 +141,24 @@ def grab_comic(key: int) -> CachedNHentaiComic:
         return KeyError("Comic not in cache")
 
 
-def add_nhcache(comic: NHentaiComic) -> None:
+def add_nhcache(comic: Doujin) -> None:
     """Adds a new comic into the nhcache"""
     cache = grab_nhcache()
     
     # Check if comic is already in the cache
-    if comic.code in cache:
+    if comic.id in cache:
         return
     
-    cache[comic.code] = {"code": comic.code, 
-                  "title": comic.title, 
-                  "favorites": comic.favorites, 
-                  "pages": comic.pages, 
-                  "thumbnail": comic.thumbnail,
-                  "tags": comic.tags
-                  }
+    cache[comic.id] = {
+        "code": comic.id,
+        "title": comic.title,
+        "favorites": comic.total_favorites,
+        "pages": comic.images,
+        "thumbnail": comic.cover.src,
+        "total_pages": comic.total_pages,
+        "tags": comic.tags
+    }
+
     with open('jsons/nhdb.json', 'w') as f:
         json.dump(cache, f, indent=4)
         

@@ -1,32 +1,41 @@
-import discord
-from discord.ext import commands
-from discord_slash import SlashCommand, SlashContext
-from discord_components import DiscordComponents
+import interactions
+import logging
+from os import environ
+import firebase_admin
+from firebase_admin import credentials
 
-bot = commands.Bot(command_prefix="fp.", intents=discord.Intents.all(), 
-                   status=discord.Status.idle, 
-                   activity=discord.Activity(type=discord.ActivityType.watching, name="nhentai doujins")
-                   )
+# logging.basicConfig(level=logging.DEBUG)
 
-slash = SlashCommand(bot, sync_commands=True, )
+# Use a service account
+cred = credentials.Certificate('fuzzibot-py-firebase-adminsdk-4v3ju-0c82b6f0b1.json')
+firebase_admin.initialize_app(cred)
 
-COGS = ('nhc.nhentai', 
-        'nhc.rate_comic')
+bot = interactions.Client(
+    # intents=interactions.Intents.ALL,
+    token=environ['TOKEN'],
+)
+
+COGS = ('nhc.nhentai', 'cogs.padertionary_add')
+
+
+@bot.command(name="ping",
+             description="See bot latency")
+async def ping(ctx: interactions.CommandContext):
+    await ctx.send(f"Pong! ({bot.latency:.2f}ms)")
 
 
 @bot.event
 async def on_ready():
-    DiscordComponents(bot)
-    print("Fuzzi Py (RW) online!")
+    print('Bot alive!')
+    await bot.change_presence(presence=interactions.ClientPresence(
+        status=interactions.StatusType.IDLE,
+        activities=[interactions.PresenceActivity(name="nHentai doujins", type=interactions.PresenceActivityType.WATCHING)],
+        afk=False
+        )
+    )
 
-
-@slash.slash(name="ping", 
-             description="See bot latency")
-# @bot.command(help="Pings the bot", name="ping")
-async def _ping(ctx: SlashContext):
-    await ctx.send(f"Pong! ({bot.latency*1000:.2f}ms)")
 
 for cog in COGS:
-    bot.load_extension(cog)
+    bot.load(cog)
 
-bot.run('')
+bot.start()
